@@ -3,6 +3,8 @@ from pymongo.errors import DuplicateKeyError
 from app.fetcher import fetch_ohlcv
 from app.database import ohlcv_collection
 from app.validator import validate_record
+import pandas as pd
+import numpy as np
 
 app = FastAPI(title="Quant Market Engine")
 
@@ -55,3 +57,29 @@ def get_data(symbol: str):
     )
 
     return records
+
+
+
+@app.get("/analytics/{symbol}/returns")
+def get_returns(symbol: str):
+
+    records = list(
+        ohlcv_collection.find(
+            {"symbol": symbol.upper()},
+            {"_id": 0, "Date": 1, "Close": 1}
+        ).sort("Date", 1)
+    )
+
+    df = pd.DataFrame(records)
+
+    if df.empty:
+        return {"error": "No data found"}
+
+    df["return"] = df["Close"].pct_change()
+
+    result = df[["Date", "Close", "return"]].fillna(0).to_dict(orient="records")
+
+    return {
+        "symbol": symbol.upper(),
+        "data": result
+    }
