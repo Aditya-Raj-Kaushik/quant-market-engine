@@ -83,3 +83,30 @@ def get_returns(symbol: str):
         "symbol": symbol.upper(),
         "data": result
     }
+    
+    
+    
+
+@app.get("/analytics/{symbol}/volatility")
+def get_volatility(symbol: str):
+
+    records = list(
+        ohlcv_collection.find(
+            {"symbol": symbol.upper()},
+            {"_id": 0, "Close": 1}
+        ).sort("Date", 1)
+    )
+
+    df = pd.DataFrame(records)
+
+    if df.empty:
+        return {"error": "No data found"}
+
+    df["return"] = df["Close"].pct_change()
+
+    vol = float(df["return"].std())
+
+    return {
+        "symbol": symbol.upper(),
+        "volatility": round(vol, 6)
+    }
