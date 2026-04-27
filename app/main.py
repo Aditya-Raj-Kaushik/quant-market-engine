@@ -179,3 +179,35 @@ def summary(symbol: str):
         "lowest_price": lowest,
         "avg_volume": avg_volume
     }
+    
+    
+    
+@app.get("/anomaly/{symbol}")
+def detect_anomaly(symbol: str):
+
+    records = list(
+        ohlcv_collection.find(
+            {"symbol": symbol.upper()},
+            {"_id": 0, "Date": 1, "Close": 1, "Volume": 1}
+        ).sort("Date", 1)
+    )
+
+    df = pd.DataFrame(records)
+
+    if df.empty:
+        return {"error": "No data found"}
+
+    df["return"] = df["Close"].pct_change()
+
+    # flag large daily moves > 10%
+    price_anomalies = df[np.abs(df["return"]) > 0.10]
+
+    # flag unusual volume > 2x avg
+    avg_vol = df["Volume"].mean()
+    volume_anomalies = df[df["Volume"] > avg_vol * 2]
+
+    return {
+        "symbol": symbol.upper(),
+        "price_anomalies": price_anomalies.fillna(0).to_dict(orient="records"),
+        "volume_anomalies": volume_anomalies.to_dict(orient="records")
+    }
