@@ -137,3 +137,34 @@ def moving_average(symbol: str, window: int = 3):
         "window": window,
         "data": result
     }
+    
+    
+    
+    
+@app.get("/analytics/{symbol}/summary")
+def summary(symbol: str):
+
+    records = list(
+        ohlcv_collection.find(
+            {"symbol": symbol.upper()},
+            {"_id": 0}
+        )
+    )
+
+    df = pd.DataFrame(records)
+
+    if df.empty:
+        return {"error": "No data found"}
+
+    latest_close = float(df["Close"].iloc[-1])
+    highest = float(df["High"].max())
+    lowest = float(df["Low"].min())
+    avg_volume = int(df["Volume"].mean())
+
+    return {
+        "symbol": symbol.upper(),
+        "latest_close": latest_close,
+        "highest_price": highest,
+        "lowest_price": lowest,
+        "avg_volume": avg_volume
+    }
