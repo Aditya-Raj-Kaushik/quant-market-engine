@@ -181,7 +181,7 @@ def summary(symbol: str):
     }
     
     
-    
+# ANOMALY DETECTION API
 @app.get("/anomaly/{symbol}")
 def detect_anomaly(symbol: str):
 
@@ -212,7 +212,7 @@ def detect_anomaly(symbol: str):
     
     
     
-
+# DATA QUALITY API
 @app.get("/quality/{symbol}")
 def quality_score(symbol: str):
 
