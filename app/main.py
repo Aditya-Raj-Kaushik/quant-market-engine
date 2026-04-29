@@ -31,7 +31,10 @@ def fetch_store(symbol: str):
         errors = validate_record(row)
 
         if errors:
-            rejected.append({"row": row, "errors": errors})
+            rejected.append({
+                "row": row,
+                "errors": errors
+            })
             continue
 
         row["symbol"] = symbol.upper()
@@ -39,6 +42,12 @@ def fetch_store(symbol: str):
         try:
             ohlcv_collection.insert_one(row)
             inserted += 1
+
+            # Store latest close price in Redis cache
+            r.set(
+                f"live:{symbol.upper()}",
+                str(row["Close"])
+            )
 
         except DuplicateKeyError:
             duplicates += 1
