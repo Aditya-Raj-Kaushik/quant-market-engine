@@ -286,6 +286,9 @@ class PortfolioRequest(BaseModel):
     symbols: List[str]
 
 
+
+
+# PORTFOLIO ANALYTICS API
 @app.post("/portfolio/analytics")
 def portfolio_analytics(request: PortfolioRequest):
 
@@ -341,6 +344,9 @@ def portfolio_analytics(request: PortfolioRequest):
     
     
 
+
+
+# CORRELATION MATRIX API
 @app.post("/portfolio/correlation")
 def correlation(request: PortfolioRequest):
 
