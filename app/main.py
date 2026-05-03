@@ -261,6 +261,10 @@ def quality_score(symbol: str):
     
     
     
+    
+    
+ 
+ # LIVE PRICE API   
 @app.get("/live/{symbol}")
 def live_price(symbol: str):
 
