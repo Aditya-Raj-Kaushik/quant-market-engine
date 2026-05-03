@@ -336,3 +336,38 @@ def portfolio_analytics(symbols: list[str]):
         "sharpe_ratio": round(sharpe, 4),
         "max_drawdown": round(max_drawdown, 4)
     }
+    
+    
+@app.post("/portfolio/correlation")
+def correlation(symbols: list[str]):
+
+    import pandas as pd
+
+    price_data = {}
+
+    for symbol in symbols:
+        records = list(
+            ohlcv_collection.find(
+                {"symbol": symbol.upper()},
+                {"_id": 0, "Date": 1, "Close": 1}
+            ).sort("Date", 1)
+        )
+
+        df = pd.DataFrame(records)
+
+        if df.empty:
+            return {"error": f"No data for {symbol}"}
+
+        df = df[["Date", "Close"]]
+        df.rename(columns={"Close": symbol.upper()}, inplace=True)
+        df.set_index("Date", inplace=True)
+
+        price_data[symbol.upper()] = df
+
+    merged = pd.concat(price_data.values(), axis=1).dropna()
+
+    returns = merged.pct_change().dropna()
+
+    corr = returns.corr()
+
+    return corr.to_dict()
