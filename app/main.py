@@ -395,3 +395,19 @@ def correlation(request: PortfolioRequest):
         "symbols": symbols,
         "correlation_matrix": corr.to_dict()
     }
+    
+    
+    
+    
+# HISTORICAL PRICE API FOR CHARTS
+@app.get("/chart/{symbol}")
+def chart_data(symbol: str):
+
+    records = list(
+        ohlcv_collection.find(
+            {"symbol": symbol.upper()},
+            {"_id": 0, "Date": 1, "Close": 1}
+        ).sort("Date", 1)
+    )
+
+    return records
